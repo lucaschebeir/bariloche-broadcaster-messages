@@ -246,7 +246,7 @@
     }
     
     .clients-container {
-      max-height: 900px;
+      max-height: 1200px;
       overflow-y: auto;
       border: 1px solid #ddd;
       border-radius: 8px;
@@ -483,7 +483,7 @@
 
         <p style="font-size: 13px; color: #666; margin-bottom: 12px;">
           <i class="fas fa-info-circle" style="color: #667eea; margin-right: 6px;"></i>
-          Clickea el idioma para cambiarlo manualmente si es necesario
+          Se muestran TODOS los mensajes. Clickea el idioma para cambiar si es necesario.
         </p>
 
         <div class="clients-container" id="clientsList"></div>
@@ -732,7 +732,7 @@
       successMsg.textContent = `✓ Procesados ${importedContacts.length} cliente(s)`;
       clientsList.innerHTML = '';
 
-      importedContacts.slice(0, 50).forEach((contact, idx) => {
+      importedContacts.forEach((contact, idx) => {
         const msgTemplate = translations[contact.language];
         const personalizedMsg = personalizeMessage(msgTemplate, contact.name, contact.locality);
         
@@ -808,14 +808,7 @@
         });
       });
 
-      if (importedContacts.length > 50) {
-        const moreCard = document.createElement('div');
-        moreCard.className = 'client-card';
-        moreCard.style.textAlign = 'center';
-        moreCard.style.color = '#666';
-        moreCard.innerHTML = `<p>... y ${importedContacts.length - 50} contactos más</p>`;
-        clientsList.appendChild(moreCard);
-      }
+
 
       resultsDiv.style.display = 'block';
 
