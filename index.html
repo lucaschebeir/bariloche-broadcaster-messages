@@ -307,14 +307,43 @@
     }
     
     .message-preview {
+      display: block;
+      width: 100%;
       background: #f9f9f9;
       padding: 10px;
       border-radius: 6px;
+      border: none;
       border-left: 3px solid #667eea;
+      font-family: inherit;
       font-size: 12px;
       line-height: 1.5;
       color: #333;
       margin-top: 8px;
+      resize: vertical;
+      overflow: hidden;
+      transition: box-shadow 0.2s, background 0.2s;
+    }
+
+    .message-preview:focus {
+      outline: none;
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.15);
+    }
+
+    .message-preview.edited {
+      border-left-color: #e0a800;
+    }
+
+    .edited-badge {
+      display: none;
+      font-size: 10px;
+      font-weight: 600;
+      color: #e0a800;
+      margin-left: 8px;
+    }
+
+    .edited-badge.active {
+      display: inline;
     }
     
     .lang-selector {
@@ -508,6 +537,34 @@
 
     let importedContacts = [];
     let translations = {};
+    let editedMessages = [];
+
+    function autoResize(textarea) {
+      textarea.style.height = 'auto';
+      textarea.style.height = (textarea.scrollHeight + 2) + 'px';
+    }
+
+    function markEdited(idx) {
+      const badge = document.querySelector(`.edited-badge[data-index="${idx}"]`);
+      const textarea = document.querySelector(`.message-preview[data-index="${idx}"]`);
+      if (badge) badge.classList.add('active');
+      if (textarea) textarea.classList.add('edited');
+    }
+
+    function unmarkEdited(idx) {
+      const badge = document.querySelector(`.edited-badge[data-index="${idx}"]`);
+      const textarea = document.querySelector(`.message-preview[data-index="${idx}"]`);
+      if (badge) badge.classList.remove('active');
+      if (textarea) textarea.classList.remove('edited');
+    }
+
+    function syncContactsData() {
+      window.contactsData = {
+        contacts: importedContacts,
+        translations: translations,
+        messages: editedMessages
+      };
+    }
 
     const KEYWORDS = ['cliente', 'alumno', 'alumnos', 'student', 'clase', 'clases'];
     const COUNTRY_CODES = {
@@ -746,7 +803,7 @@
         card.innerHTML = `
           <div class="client-header">
             <div class="client-info">
-              <h3>${contact.fullName}</h3>
+              <h3>${contact.fullName} <span class="edited-badge" data-index="${idx}">(editado)</span></h3>
               <p>${contact.phone}</p>
             </div>
             <button class="lang-badge" data-index="${idx}">${langIcon} ${langLabel}</button>
@@ -756,12 +813,27 @@
             <button class="lang-btn" data-lang="pt">🇧🇷 PT</button>
             <button class="lang-btn" data-lang="en">🇬🇧 EN</button>
           </div>
-          <div class="message-preview" data-index="${idx}">
-            ${personalizedMsg}
-          </div>
+          <textarea class="message-preview" data-index="${idx}" rows="1">${personalizedMsg}</textarea>
         `;
-        
+
         clientsList.appendChild(card);
+      });
+
+      editedMessages = importedContacts.map((contact) => {
+        const msgTemplate = translations[contact.language];
+        return personalizeMessage(msgTemplate, contact.name, contact.locality);
+      });
+
+      // Ajustar altura y guardar ediciones manuales
+      document.querySelectorAll('.message-preview').forEach(textarea => {
+        autoResize(textarea);
+        textarea.addEventListener('input', (e) => {
+          const idx = parseInt(e.target.dataset.index);
+          editedMessages[idx] = e.target.value;
+          markEdited(idx);
+          autoResize(e.target);
+          syncContactsData();
+        });
       });
 
       // Agregar event listeners a los badges
@@ -786,8 +858,12 @@
           // Actualizar mensaje
           const msgTemplate = translations[newLang];
           const personalizedMsg = personalizeMessage(msgTemplate, importedContacts[idx].name, importedContacts[idx].locality);
-          document.querySelector(`.message-preview[data-index="${idx}"]`).textContent = personalizedMsg;
-          
+          const textarea = document.querySelector(`.message-preview[data-index="${idx}"]`);
+          textarea.value = personalizedMsg;
+          editedMessages[idx] = personalizedMsg;
+          unmarkEdited(idx);
+          autoResize(textarea);
+
           // Actualizar badge
           const langLabel = { 'es': 'Español', 'pt': 'Portugués', 'en': 'Inglés' }[newLang];
           const langIcon = { 'es': '🇪🇸', 'pt': '🇧🇷', 'en': '🇬🇧' }[newLang];
@@ -812,10 +888,7 @@
 
       resultsDiv.style.display = 'block';
 
-      window.contactsData = {
-        contacts: importedContacts,
-        translations: translations
-      };
+      syncContactsData();
     });
 
     sendBtn.addEventListener('click', () => {
@@ -824,6 +897,8 @@
 
     function limpiar() {
       importedContacts = [];
+      editedMessages = [];
+      translations = {};
       messageInput.value = 'Hola {nombre}, soy Lucas Chebeir, instructor de esquí. Esquiamos juntos en {localidad}. Te escribo para contarte que en Bariloche llegó la nieve y ya abrió la parte superior. Está nevando hace 3 días y se pronostica nieve toda la próxima semana. ¡Si estabas pensando en venir, esta es la señal!';
       resultsDiv.style.display = 'none';
       loadingDiv.style.display = 'none';
