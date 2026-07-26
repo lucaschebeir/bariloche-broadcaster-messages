@@ -245,6 +245,65 @@
       margin: 0;
     }
     
+    .selection-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    .selection-bar input#searchInput {
+      flex: 1;
+      min-width: 180px;
+      padding: 8px 12px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 13px;
+    }
+
+    .selection-bar input#searchInput:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .selection-bar button {
+      padding: 8px 14px;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .selected-count {
+      font-size: 12px;
+      color: #666;
+      font-weight: 600;
+      white-space: nowrap;
+      margin-left: auto;
+    }
+
+    .client-card.deselected {
+      opacity: 0.5;
+    }
+
+    .client-checkbox-wrap {
+      display: flex;
+      align-items: center;
+      margin-right: 10px;
+    }
+
+    .client-checkbox {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+      accent-color: #667eea;
+    }
+
+    .client-header .client-info {
+      flex: 1;
+    }
+
     .clients-container {
       max-height: 1200px;
       overflow-y: auto;
@@ -460,11 +519,21 @@
       <div class="step-section">
         <div class="step-title">
           <span class="step-number">2</span>
-          Escribe tu mensaje
+          Escribe tu mensaje en cada idioma
         </div>
         <div class="form-group">
-          <label>Mensaje en español</label>
-          <textarea id="messageInput">Hola {nombre}, soy Lucas Chebeir, instructor de esquí. Esquiamos juntos en {localidad}. Te escribo para contarte que en Bariloche llegó la nieve y ya abrió la parte superior. Está nevando hace 3 días y se pronostica nieve toda la próxima semana. ¡Si estabas pensando en venir, esta es la señal!</textarea>
+          <label>🇪🇸 Mensaje en español</label>
+          <textarea id="messageInputEs">Hola {nombre}, soy Lucas Chebeir, instructor de esquí. Esquiamos juntos en {localidad}. Te escribo para contarte que en Bariloche llegó la nieve y ya abrió la parte superior. Está nevando hace 3 días y se pronostica nieve toda la próxima semana. ¡Si estabas pensando en venir, esta es la señal!</textarea>
+          <p class="helper-text">Usa {nombre} y {localidad} como variables</p>
+        </div>
+        <div class="form-group">
+          <label>🇧🇷 Mensaje en portugués</label>
+          <textarea id="messageInputPt">Olá {nombre}, sou o Lucas Chebeir, instrutor de esqui. Esquiamos juntos em {localidad}. Estou escrevendo para contar que a neve chegou em Bariloche e a parte de cima já abriu. Está nevando há 3 dias e a previsão é de neve durante toda a próxima semana. Se você estava pensando em vir, este é o sinal!</textarea>
+          <p class="helper-text">Usa {nombre} y {localidad} como variables</p>
+        </div>
+        <div class="form-group">
+          <label>🇬🇧 Mensaje en inglés</label>
+          <textarea id="messageInputEn">Hi {nombre}, this is Lucas Chebeir, ski instructor. We skied together in {localidad}. I'm writing to let you know that the snow has arrived in Bariloche and the upper part of the mountain is already open. It's been snowing for 3 days and more snow is forecast for the whole next week. If you were thinking about coming, this is the sign!</textarea>
           <p class="helper-text">Usa {nombre} y {localidad} como variables</p>
         </div>
       </div>
@@ -472,17 +541,17 @@
       <div class="step-section">
         <div class="step-title">
           <span class="step-number">3</span>
-          Procesar y traducir
+          Procesar
         </div>
         <div class="button-group">
-          <button id="processBtn" disabled>Procesar y traducir</button>
+          <button id="processBtn" disabled>Procesar mensajes</button>
           <button class="btn-secondary" onclick="limpiar()">Limpiar</button>
         </div>
       </div>
 
       <div id="loading" class="loading">
         <div class="loading-spinner"></div>
-        <p>Traduciendo mensajes...</p>
+        <p>Procesando mensajes...</p>
       </div>
 
       <div id="results" class="results-section">
@@ -512,8 +581,15 @@
 
         <p style="font-size: 13px; color: #666; margin-bottom: 12px;">
           <i class="fas fa-info-circle" style="color: #667eea; margin-right: 6px;"></i>
-          Se muestran TODOS los mensajes. Clickea el idioma para cambiar si es necesario.
+          Se muestran TODOS los mensajes. Clickea el idioma para cambiar si es necesario. Destildá a quien no quieras incluir en el envío.
         </p>
+
+        <div class="selection-bar">
+          <input type="text" id="searchInput" placeholder="Buscar por nombre o teléfono..." />
+          <button type="button" id="selectAllBtn" class="btn-secondary">Seleccionar todos</button>
+          <button type="button" id="deselectAllBtn" class="btn-secondary">Deseleccionar todos</button>
+          <span id="selectedCount" class="selected-count"></span>
+        </div>
 
         <div class="clients-container" id="clientsList"></div>
 
@@ -529,15 +605,68 @@
     const vcfLoadedText = document.getElementById('vcfLoadedText');
     const processBtn = document.getElementById('processBtn');
     const sendBtn = document.getElementById('sendBtn');
-    const messageInput = document.getElementById('messageInput');
+    const messageInputEs = document.getElementById('messageInputEs');
+    const messageInputPt = document.getElementById('messageInputPt');
+    const messageInputEn = document.getElementById('messageInputEn');
+    const DEFAULT_MESSAGES = {
+      es: messageInputEs.value,
+      pt: messageInputPt.value,
+      en: messageInputEn.value
+    };
     const resultsDiv = document.getElementById('results');
     const loadingDiv = document.getElementById('loading');
     const clientsList = document.getElementById('clientsList');
     const successMsg = document.getElementById('successMsg');
+    const searchInput = document.getElementById('searchInput');
+    const selectAllBtn = document.getElementById('selectAllBtn');
+    const deselectAllBtn = document.getElementById('deselectAllBtn');
+    const selectedCountEl = document.getElementById('selectedCount');
 
     let importedContacts = [];
     let translations = {};
     let editedMessages = [];
+
+    function updateSelectedCount() {
+      const selected = importedContacts.filter(c => c.selected).length;
+      selectedCountEl.textContent = `${selected} de ${importedContacts.length} seleccionados`;
+    }
+
+    searchInput.addEventListener('input', (e) => {
+      const term = e.target.value.trim().toLowerCase();
+      document.querySelectorAll('.client-card').forEach(card => {
+        const idx = parseInt(card.dataset.index);
+        const contact = importedContacts[idx];
+        if (!contact) return;
+        const match = !term || contact.fullName.toLowerCase().includes(term) || contact.phone.toLowerCase().includes(term);
+        card.style.display = match ? '' : 'none';
+      });
+    });
+
+    selectAllBtn.addEventListener('click', () => {
+      importedContacts.forEach(c => c.selected = true);
+      document.querySelectorAll('.client-checkbox').forEach(cb => cb.checked = true);
+      document.querySelectorAll('.client-card').forEach(card => card.classList.remove('deselected'));
+      updateSelectedCount();
+      syncContactsData();
+    });
+
+    deselectAllBtn.addEventListener('click', () => {
+      importedContacts.forEach(c => c.selected = false);
+      document.querySelectorAll('.client-checkbox').forEach(cb => cb.checked = false);
+      document.querySelectorAll('.client-card').forEach(card => card.classList.add('deselected'));
+      updateSelectedCount();
+      syncContactsData();
+    });
+
+    clientsList.addEventListener('change', (e) => {
+      if (!e.target.classList.contains('client-checkbox')) return;
+      const idx = parseInt(e.target.dataset.index);
+      importedContacts[idx].selected = e.target.checked;
+      const card = document.querySelector(`.client-card[data-index="${idx}"]`);
+      if (card) card.classList.toggle('deselected', !e.target.checked);
+      updateSelectedCount();
+      syncContactsData();
+    });
 
     function autoResize(textarea) {
       textarea.style.height = 'auto';
@@ -701,7 +830,8 @@
           fullName: contact.name,
           phone: contact.phone,
           language: detectLanguage(contact.name, contact.phone),
-          locality: contact.name.includes('Zermatt') ? 'Zermatt' : 'Bariloche'
+          locality: contact.name.includes('Zermatt') ? 'Zermatt' : 'Bariloche',
+          selected: true
         }));
 
         vcfLoadedText.textContent = `✓ Importados ${allContacts.length} contactos (${importedContacts.length} clientes/alumnos detectados)`;
@@ -711,37 +841,6 @@
       reader.readAsText(file);
     }
 
-    async function translateMessage(text, targetLang) {
-      const langNames = {
-        'es': 'Spanish',
-        'pt': 'Portuguese (from Brazil)',
-        'en': 'English'
-      };
-      
-      try {
-        const response = await fetch('https://api.anthropic.com/v1/messages', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            model: 'claude-sonnet-4-6',
-            max_tokens: 500,
-            messages: [{
-              role: 'user',
-              content: `Translate this message to ${langNames[targetLang]}. Keep the {nombre} and {localidad} placeholders exactly as they are. Respond ONLY with the translated text, nothing else:\n\n${text}`
-            }]
-          })
-        });
-        
-        const data = await response.json();
-        return data.content[0].text || text;
-      } catch (e) {
-        console.error('Translation error:', e);
-        return text;
-      }
-    }
-
     function personalizeMessage(template, name, locality) {
       return template
         .replace(/{nombre}/g, name)
@@ -749,10 +848,8 @@
     }
 
     processBtn.addEventListener('click', async () => {
-      const messageTemplate = messageInput.value;
-      
-      if (!messageTemplate.trim()) {
-        alert('Por favor escribe un mensaje');
+      if (!messageInputEs.value.trim() || !messageInputPt.value.trim() || !messageInputEn.value.trim()) {
+        alert('Por favor escribe el mensaje en los 3 idiomas');
         return;
       }
 
@@ -763,16 +860,13 @@
 
       loadingDiv.style.display = 'block';
       resultsDiv.style.display = 'none';
+      await new Promise(r => setTimeout(r, 30));
 
-      const languages = new Set(importedContacts.map(c => c.language));
-      translations = { 'es': messageTemplate };
-
-      for (const lang of languages) {
-        if (lang !== 'es') {
-          translations[lang] = await translateMessage(messageTemplate, lang);
-          await new Promise(r => setTimeout(r, 600));
-        }
-      }
+      translations = {
+        es: messageInputEs.value,
+        pt: messageInputPt.value,
+        en: messageInputEn.value
+      };
 
       loadingDiv.style.display = 'none';
 
@@ -797,11 +891,14 @@
         const langIcon = { 'es': '🇪🇸', 'pt': '🇧🇷', 'en': '🇬🇧' }[contact.language];
         
         const card = document.createElement('div');
-        card.className = 'client-card';
+        card.className = 'client-card' + (contact.selected ? '' : ' deselected');
         card.dataset.index = idx;
-        
+
         card.innerHTML = `
           <div class="client-header">
+            <div class="client-checkbox-wrap">
+              <input type="checkbox" class="client-checkbox" data-index="${idx}" ${contact.selected ? 'checked' : ''} />
+            </div>
             <div class="client-info">
               <h3>${contact.fullName} <span class="edited-badge" data-index="${idx}">(editado)</span></h3>
               <p>${contact.phone}</p>
@@ -824,9 +921,8 @@
         return personalizeMessage(msgTemplate, contact.name, contact.locality);
       });
 
-      // Ajustar altura y guardar ediciones manuales
+      // Guardar ediciones manuales (el ajuste de altura se hace luego de mostrar la sección)
       document.querySelectorAll('.message-preview').forEach(textarea => {
-        autoResize(textarea);
         textarea.addEventListener('input', (e) => {
           const idx = parseInt(e.target.dataset.index);
           editedMessages[idx] = e.target.value;
@@ -888,22 +984,31 @@
 
       resultsDiv.style.display = 'block';
 
+      // Recién ahora el contenedor es visible, así que recién ahora scrollHeight es correcto
+      document.querySelectorAll('.message-preview').forEach(textarea => autoResize(textarea));
+
+      searchInput.value = '';
+      updateSelectedCount();
       syncContactsData();
     });
 
     sendBtn.addEventListener('click', () => {
-      alert('¡Cuando hayas verificado tu teléfono en Brevo, conectaremos esta app directamente!\n\nMientras tanto, puedes copiar y pegar los mensajes manualmente a WhatsApp.');
+      const selectedCount = importedContacts.filter(c => c.selected).length;
+      alert(`¡Cuando hayas verificado tu teléfono en Brevo, conectaremos esta app directamente!\n\nSe enviarían a ${selectedCount} de ${importedContacts.length} contactos (los seleccionados).\n\nMientras tanto, puedes copiar y pegar los mensajes manualmente a WhatsApp.`);
     });
 
     function limpiar() {
       importedContacts = [];
       editedMessages = [];
       translations = {};
-      messageInput.value = 'Hola {nombre}, soy Lucas Chebeir, instructor de esquí. Esquiamos juntos en {localidad}. Te escribo para contarte que en Bariloche llegó la nieve y ya abrió la parte superior. Está nevando hace 3 días y se pronostica nieve toda la próxima semana. ¡Si estabas pensando en venir, esta es la señal!';
+      messageInputEs.value = DEFAULT_MESSAGES.es;
+      messageInputPt.value = DEFAULT_MESSAGES.pt;
+      messageInputEn.value = DEFAULT_MESSAGES.en;
       resultsDiv.style.display = 'none';
       loadingDiv.style.display = 'none';
       vcfLoaded.style.display = 'none';
       vcfInput.value = '';
+      searchInput.value = '';
       processBtn.disabled = true;
     }
   </script>
