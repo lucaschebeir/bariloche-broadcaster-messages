@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bariloche Message Broadcaster</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+      color: #333;
+    }
+    
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+      overflow: hidden;
+    }
+    
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 40px 30px;
+      text-align: center;
+    }
+    
+    .header h1 {
+      font-size: 28px;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+    
+    .header p {
+      font-size: 14px;
+      opacity: 0.9;
+      margin: 0;
+    }
+    
+    .content {
+      padding: 40px 30px;
+    }
+    
+    .step-section {
+      margin-bottom: 40px;
+    }
+    
+    .step-title {
+      display: flex;
+      align-items: center;
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      color: #333;
+    }
+    
+    .step-number {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border-radius: 50%;
+      font-weight: 600;
+      margin-right: 12px;
+      font-size: 16px;
+    }
+    
+    .vcf-upload {
+      border: 2px dashed #667eea;
+      border-radius: 8px;
+      padding: 40px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: #f9f9f9;
+    }
+    
+    .vcf-upload:hover {
+      border-color: #764ba2;
+      background: #f0f0f0;
+    }
+    
+    .vcf-upload.dragover {
+      border-color: #764ba2;
+      background: #e8e4ff;
+      transform: scale(1.02);
+    }
+    
+    .vcf-upload i {
+      font-size: 48px;
+      color: #667eea;
+      margin-bottom: 12px;
+      display: block;
+    }
+    
+    .vcf-upload p {
+      color: #666;
+      margin: 8px 0;
+      font-size: 14px;
+    }
+    
+    .vcf-upload strong {
+      color: #333;
+    }
+    
+    #vcfInput {
+      display: none;
+    }
+    
+    .form-group {
+      margin-bottom: 25px;
+    }
+    
+    .form-group label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 10px;
+      color: #333;
+      font-size: 14px;
+    }
+    
+    .form-group textarea {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 14px;
+      resize: vertical;
+      transition: border-color 0.2s;
+      min-height: 100px;
+    }
+    
+    .form-group textarea:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    
+    .helper-text {
+      font-size: 12px;
+      color: #666;
+      margin-top: 8px;
+    }
+    
+    .button-group {
+      display: flex;
+      gap: 12px;
+      margin-top: 30px;
+    }
+    
+    button {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    #processBtn {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      flex: 1;
+    }
+    
+    #processBtn:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+    }
+    
+    #processBtn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    .btn-secondary {
+      background: #f0f0f0;
+      color: #333;
+    }
+    
+    .btn-secondary:hover {
+      background: #e0e0e0;
+    }
+    
+    .results-section {
+      display: none;
+      margin-top: 30px;
+      padding-top: 30px;
+      border-top: 2px solid #f0f0f0;
+    }
+    
+    .success-banner {
+      background: #d4edda;
+      border: 1px solid #c3e6cb;
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin-bottom: 20px;
+      color: #155724;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    
+    .stat-card {
+      background: #f0f0f0;
+      padding: 16px;
+      border-radius: 8px;
+      text-align: center;
+    }
+    
+    .stat-card h3 {
+      font-size: 24px;
+      color: #667eea;
+      margin: 0 0 4px 0;
+      font-weight: 600;
+    }
+    
+    .stat-card p {
+      font-size: 12px;
+      color: #666;
+      margin: 0;
+    }
+    
+    .clients-container {
+      max-height: 900px;
+      overflow-y: auto;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 20px;
+      background: #fafafa;
+    }
+    
+    .client-card {
+      background: white;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 8px;
+      transition: all 0.2s;
+    }
+    
+    .client-card:hover {
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      border-color: #667eea;
+    }
+    
+    .client-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    
+    .client-info h3 {
+      font-size: 13px;
+      font-weight: 600;
+      margin: 0 0 2px 0;
+      color: #333;
+    }
+    
+    .client-info p {
+      font-size: 11px;
+      color: #666;
+      margin: 0;
+    }
+    
+    .lang-badge {
+      background: #667eea;
+      color: white;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: none;
+    }
+    
+    .lang-badge:hover {
+      background: #764ba2;
+      transform: scale(1.05);
+    }
+    
+    .message-preview {
+      background: #f9f9f9;
+      padding: 10px;
+      border-radius: 6px;
+      border-left: 3px solid #667eea;
+      font-size: 12px;
+      line-height: 1.5;
+      color: #333;
+      margin-top: 8px;
+    }
+    
+    .lang-selector {
+      display: none;
+      gap: 4px;
+      margin-top: 8px;
+      flex-wrap: wrap;
+    }
+    
+    .lang-selector.active {
+      display: flex;
+    }
+    
+    .lang-btn {
+      padding: 4px 12px;
+      border: 0.5px solid #ddd;
+      border-radius: 4px;
+      background: white;
+      color: #333;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .lang-btn:hover {
+      background: #f0f0f0;
+      border-color: #667eea;
+    }
+    
+    .lang-btn.active {
+      background: #667eea;
+      color: white;
+      border-color: #667eea;
+    }
+    
+    .loading {
+      display: none;
+      text-align: center;
+      padding: 40px 20px;
+    }
+    
+    .loading-spinner {
+      display: inline-block;
+      width: 40px;
+      height: 40px;
+      border: 4px solid #f0f0f0;
+      border-top-color: #667eea;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-bottom: 16px;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    .loading p {
+      color: #666;
+      font-size: 14px;
+    }
+    
+    #sendBtn {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      width: 100%;
+      margin-top: 20px;
+    }
+    
+    #sendBtn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+    }
+    
+    .vcf-loaded {
+      background: #d4edda;
+      border: 1px solid #c3e6cb;
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin-bottom: 20px;
+      color: #155724;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>⛷️ Bariloche Message Broadcaster</h1>
+      <p>Importá contactos desde VCF y envía mensajes personalizados en múltiples idiomas</p>
+    </div>
+    
+    <div class="content">
+      <div class="step-section">
+        <div class="step-title">
+          <span class="step-number">1</span>
+          Importar contactos desde VCF
+        </div>
+        <div id="vcfUploadArea" class="vcf-upload">
+          <i class="fas fa-file-upload"></i>
+          <p><strong>Arrastrá tu archivo .vcf aquí</strong></p>
+          <p>o clickea para seleccionar</p>
+          <input type="file" id="vcfInput" accept=".vcf" />
+        </div>
+        <div id="vcfLoaded" class="vcf-loaded" style="display: none;">
+          <i class="fas fa-check-circle"></i>
+          <span id="vcfLoadedText"></span>
+        </div>
+      </div>
+
+      <div class="step-section">
+        <div class="step-title">
+          <span class="step-number">2</span>
+          Escribe tu mensaje
+        </div>
+        <div class="form-group">
+          <label>Mensaje en español</label>
+          <textarea id="messageInput">Hola {nombre}, soy Lucas Chebeir, instructor de esquí. Esquiamos juntos en {localidad}. Te escribo para contarte que en Bariloche llegó la nieve y ya abrió la parte superior. Está nevando hace 3 días y se pronostica nieve toda la próxima semana. ¡Si estabas pensando en venir, esta es la señal!</textarea>
+          <p class="helper-text">Usa {nombre} y {localidad} como variables</p>
+        </div>
+      </div>
+
+      <div class="step-section">
+        <div class="step-title">
+          <span class="step-number">3</span>
+          Procesar y traducir
+        </div>
+        <div class="button-group">
+          <button id="processBtn" disabled>Procesar y traducir</button>
+          <button class="btn-secondary" onclick="limpiar()">Limpiar</button>
+        </div>
+      </div>
+
+      <div id="loading" class="loading">
+        <div class="loading-spinner"></div>
+        <p>Traduciendo mensajes...</p>
+      </div>
+
+      <div id="results" class="results-section">
+        <div class="success-banner">
+          <i class="fas fa-check-circle"></i>
+          <span id="successMsg"></span>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <h3 id="statClientes">0</h3>
+            <p>Total clientes</p>
+          </div>
+          <div class="stat-card">
+            <h3 id="statEspanol">0</h3>
+            <p>🇪🇸 Español</p>
+          </div>
+          <div class="stat-card">
+            <h3 id="statPortugues">0</h3>
+            <p>🇧🇷 Portugués</p>
+          </div>
+          <div class="stat-card">
+            <h3 id="statIngles">0</h3>
+            <p>🇬🇧 Inglés</p>
+          </div>
+        </div>
+
+        <p style="font-size: 13px; color: #666; margin-bottom: 12px;">
+          <i class="fas fa-info-circle" style="color: #667eea; margin-right: 6px;"></i>
+          Clickea el idioma para cambiarlo manualmente si es necesario
+        </p>
+
+        <div class="clients-container" id="clientsList"></div>
+
+        <button id="sendBtn">Enviar por Brevo (cuando esté listo)</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const vcfUploadArea = document.getElementById('vcfUploadArea');
+    const vcfInput = document.getElementById('vcfInput');
+    const vcfLoaded = document.getElementById('vcfLoaded');
+    const vcfLoadedText = document.getElementById('vcfLoadedText');
+    const processBtn = document.getElementById('processBtn');
+    const sendBtn = document.getElementById('sendBtn');
+    const messageInput = document.getElementById('messageInput');
+    const resultsDiv = document.getElementById('results');
+    const loadingDiv = document.getElementById('loading');
+    const clientsList = document.getElementById('clientsList');
+    const successMsg = document.getElementById('successMsg');
+
+    let importedContacts = [];
+    let translations = {};
+
+    const KEYWORDS = ['cliente', 'alumno', 'alumnos', 'student', 'clase', 'clases'];
+    const COUNTRY_CODES = {
+      '+34': 'es', '+55': 'pt', '+1': 'en',
+      '+54': 'es', '+549': 'es', '+39': 'en', '+41': 'en',
+      '+33': 'en', '+49': 'en', '+48': 'en',
+      '+44': 'en', '+61': 'en', '+64': 'en',
+      '+52': 'es', '+56': 'es', '+51': 'es',
+      '+57': 'es', '+58': 'es', '+591': 'es',
+      '+593': 'es', '+598': 'es', '+505': 'es',
+      '+502': 'es', '+507': 'es', '+503': 'es',
+      '+31': 'en', '+32': 'en', '+43': 'en',
+      '+47': 'en', '+46': 'en', '+45': 'en',
+      '+358': 'en', '+353': 'en', '+421': 'en'
+    };
+
+    const NATIONALITIES = {
+      'españa': 'es', 'spanish': 'es', 'espana': 'es', 'es': 'es',
+      'brasil': 'pt', 'portuguese': 'pt', 'br': 'pt', 'brazil': 'pt',
+      'argentina': 'es', 'usa': 'en', 'united': 'en',
+      'england': 'en', 'uk': 'en', 'america': 'en', 'american': 'en',
+      'chile': 'es', 'peru': 'es', 'colombia': 'es', 'mexico': 'es',
+      'venezuela': 'es', 'ecuador': 'es', 'uruguay': 'es',
+      'student': 'en', 'japan': 'en', 'australia': 'en',
+      'canada': 'en', 'nz': 'en', 'ireland': 'en',
+      'suiza': 'en', 'switzerland': 'en', 'zermatt': 'en',
+      'france': 'en', 'francia': 'en', 'alemania': 'en',
+      'germany': 'en', 'italia': 'en', 'italy': 'en',
+      'polo': 'en', 'fishing': 'en', 'adventure': 'en'
+    };
+
+    function extractPhoneCode(phone) {
+      const codes = ['+591', '+593', '+598', '+505', '+502', '+507', '+503', '+421', '+549', '+54', '+55', '+34', '+1', '+39', '+41', '+33', '+49', '+48', '+44', '+61', '+64', '+31', '+32', '+43', '+47', '+46', '+45', '+358', '+353'];
+      
+      for (const code of codes) {
+        if (phone.startsWith(code)) {
+          return code;
+        }
+      }
+      return null;
+    }
+
+    function detectLanguage(name, phone) {
+      const code = extractPhoneCode(phone);
+      if (code && COUNTRY_CODES[code]) {
+        return COUNTRY_CODES[code];
+      }
+      
+      const nameLower = name.toLowerCase();
+      for (const [nat, lang] of Object.entries(NATIONALITIES)) {
+        if (nameLower.includes(nat)) return lang;
+      }
+      
+      return 'es';
+    }
+
+    function filterClients(contacts) {
+      return contacts.filter(contact => {
+        const nameLower = contact.name.toLowerCase();
+        return /alumno|alumna|client|student|clase/i.test(nameLower);
+      });
+    }
+    
+    function extractFirstName(fullName) {
+      let name = fullName.trim();
+      name = name.replace(/\s*\([^)]*\)/g, '').trim();
+      const parts = name.split(/\s+/);
+      return parts[0] || name;
+    }
+
+    function parseVCF(vcfText) {
+      const contacts = [];
+      const vcardsRegex = /BEGIN:VCARD([\s\S]*?)END:VCARD/g;
+      let match;
+
+      while ((match = vcardsRegex.exec(vcfText)) !== null) {
+        const vcardContent = match[1];
+        
+        const fnMatch = vcardContent.match(/^FN:(.+)$/m);
+        const telMatch = vcardContent.match(/^(?:item\d\.)?TEL[^:]*:(.+)$/m);
+
+        if (fnMatch && telMatch) {
+          let phone = telMatch[1].trim().replace(/[\s\-()]/g, '');
+          
+          if (!phone.startsWith('+')) {
+            if (phone.startsWith('0')) {
+              phone = '+54' + phone.substring(1);
+            }
+          }
+
+          const fullName = fnMatch[1].trim();
+
+          contacts.push({
+            name: fullName,
+            phone: phone
+          });
+        }
+      }
+
+      return contacts;
+    }
+
+    vcfUploadArea.addEventListener('click', () => vcfInput.click());
+    vcfUploadArea.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      vcfUploadArea.classList.add('dragover');
+    });
+    vcfUploadArea.addEventListener('dragleave', () => {
+      vcfUploadArea.classList.remove('dragover');
+    });
+    vcfUploadArea.addEventListener('drop', (e) => {
+      e.preventDefault();
+      vcfUploadArea.classList.remove('dragover');
+      if (e.dataTransfer.files.length > 0) {
+        handleVCFUpload(e.dataTransfer.files[0]);
+      }
+    });
+
+    vcfInput.addEventListener('change', (e) => {
+      if (e.target.files.length > 0) {
+        handleVCFUpload(e.target.files[0]);
+      }
+    });
+
+    function handleVCFUpload(file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const vcfText = e.target.result;
+        const allContacts = parseVCF(vcfText);
+        const clients = filterClients(allContacts);
+
+        importedContacts = clients.map(contact => ({
+          name: extractFirstName(contact.name),
+          fullName: contact.name,
+          phone: contact.phone,
+          language: detectLanguage(contact.name, contact.phone),
+          locality: contact.name.includes('Zermatt') ? 'Zermatt' : 'Bariloche'
+        }));
+
+        vcfLoadedText.textContent = `✓ Importados ${allContacts.length} contactos (${importedContacts.length} clientes/alumnos detectados)`;
+        vcfLoaded.style.display = 'flex';
+        processBtn.disabled = false;
+      };
+      reader.readAsText(file);
+    }
+
+    async function translateMessage(text, targetLang) {
+      const langNames = {
+        'es': 'Spanish',
+        'pt': 'Portuguese (from Brazil)',
+        'en': 'English'
+      };
+      
+      try {
+        const response = await fetch('https://api.anthropic.com/v1/messages', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            model: 'claude-sonnet-4-6',
+            max_tokens: 500,
+            messages: [{
+              role: 'user',
+              content: `Translate this message to ${langNames[targetLang]}. Keep the {nombre} and {localidad} placeholders exactly as they are. Respond ONLY with the translated text, nothing else:\n\n${text}`
+            }]
+          })
+        });
+        
+        const data = await response.json();
+        return data.content[0].text || text;
+      } catch (e) {
+        console.error('Translation error:', e);
+        return text;
+      }
+    }
+
+    function personalizeMessage(template, name, locality) {
+      return template
+        .replace(/{nombre}/g, name)
+        .replace(/{localidad}/g, locality);
+    }
+
+    processBtn.addEventListener('click', async () => {
+      const messageTemplate = messageInput.value;
+      
+      if (!messageTemplate.trim()) {
+        alert('Por favor escribe un mensaje');
+        return;
+      }
+
+      if (importedContacts.length === 0) {
+        alert('No hay contactos para procesar');
+        return;
+      }
+
+      loadingDiv.style.display = 'block';
+      resultsDiv.style.display = 'none';
+
+      const languages = new Set(importedContacts.map(c => c.language));
+      translations = { 'es': messageTemplate };
+
+      for (const lang of languages) {
+        if (lang !== 'es') {
+          translations[lang] = await translateMessage(messageTemplate, lang);
+          await new Promise(r => setTimeout(r, 600));
+        }
+      }
+
+      loadingDiv.style.display = 'none';
+
+      const stats = { es: 0, pt: 0, en: 0 };
+      importedContacts.forEach(c => {
+        if (stats[c.language] !== undefined) stats[c.language]++;
+      });
+
+      document.getElementById('statClientes').textContent = importedContacts.length;
+      document.getElementById('statEspanol').textContent = stats.es;
+      document.getElementById('statPortugues').textContent = stats.pt;
+      document.getElementById('statIngles').textContent = stats.en;
+
+      successMsg.textContent = `✓ Procesados ${importedContacts.length} cliente(s)`;
+      clientsList.innerHTML = '';
+
+      importedContacts.slice(0, 50).forEach((contact, idx) => {
+        const msgTemplate = translations[contact.language];
+        const personalizedMsg = personalizeMessage(msgTemplate, contact.name, contact.locality);
+        
+        const langLabel = { 'es': 'Español', 'pt': 'Portugués', 'en': 'Inglés' }[contact.language];
+        const langIcon = { 'es': '🇪🇸', 'pt': '🇧🇷', 'en': '🇬🇧' }[contact.language];
+        
+        const card = document.createElement('div');
+        card.className = 'client-card';
+        card.dataset.index = idx;
+        
+        card.innerHTML = `
+          <div class="client-header">
+            <div class="client-info">
+              <h3>${contact.fullName}</h3>
+              <p>${contact.phone}</p>
+            </div>
+            <button class="lang-badge" data-index="${idx}">${langIcon} ${langLabel}</button>
+          </div>
+          <div class="lang-selector" data-index="${idx}">
+            <button class="lang-btn" data-lang="es">🇪🇸 ES</button>
+            <button class="lang-btn" data-lang="pt">🇧🇷 PT</button>
+            <button class="lang-btn" data-lang="en">🇬🇧 EN</button>
+          </div>
+          <div class="message-preview" data-index="${idx}">
+            ${personalizedMsg}
+          </div>
+        `;
+        
+        clientsList.appendChild(card);
+      });
+
+      // Agregar event listeners a los badges
+      document.querySelectorAll('.lang-badge').forEach(badge => {
+        badge.addEventListener('click', (e) => {
+          const idx = parseInt(e.target.dataset.index);
+          const selector = document.querySelector(`.lang-selector[data-index="${idx}"]`);
+          selector.classList.toggle('active');
+        });
+      });
+
+      // Agregar event listeners a los botones de idioma
+      document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const newLang = e.target.dataset.lang;
+          const selector = e.target.closest('.lang-selector');
+          const idx = parseInt(selector.dataset.index);
+          
+          // Actualizar idioma del contacto
+          importedContacts[idx].language = newLang;
+          
+          // Actualizar mensaje
+          const msgTemplate = translations[newLang];
+          const personalizedMsg = personalizeMessage(msgTemplate, importedContacts[idx].name, importedContacts[idx].locality);
+          document.querySelector(`.message-preview[data-index="${idx}"]`).textContent = personalizedMsg;
+          
+          // Actualizar badge
+          const langLabel = { 'es': 'Español', 'pt': 'Portugués', 'en': 'Inglés' }[newLang];
+          const langIcon = { 'es': '🇪🇸', 'pt': '🇧🇷', 'en': '🇬🇧' }[newLang];
+          const badge = document.querySelector(`.lang-badge[data-index="${idx}"]`);
+          badge.textContent = `${langIcon} ${langLabel}`;
+          
+          // Cerrar selector
+          selector.classList.remove('active');
+          
+          // Actualizar estadísticas
+          const stats = { es: 0, pt: 0, en: 0 };
+          importedContacts.forEach(c => {
+            if (stats[c.language] !== undefined) stats[c.language]++;
+          });
+          document.getElementById('statEspanol').textContent = stats.es;
+          document.getElementById('statPortugues').textContent = stats.pt;
+          document.getElementById('statIngles').textContent = stats.en;
+        });
+      });
+
+      if (importedContacts.length > 50) {
+        const moreCard = document.createElement('div');
+        moreCard.className = 'client-card';
+        moreCard.style.textAlign = 'center';
+        moreCard.style.color = '#666';
+        moreCard.innerHTML = `<p>... y ${importedContacts.length - 50} contactos más</p>`;
+        clientsList.appendChild(moreCard);
+      }
+
+      resultsDiv.style.display = 'block';
+
+      window.contactsData = {
+        contacts: importedContacts,
+        translations: translations
+      };
+    });
+
+    sendBtn.addEventListener('click', () => {
+      alert('¡Cuando hayas verificado tu teléfono en Brevo, conectaremos esta app directamente!\n\nMientras tanto, puedes copiar y pegar los mensajes manualmente a WhatsApp.');
+    });
+
+    function limpiar() {
+      importedContacts = [];
+      messageInput.value = 'Hola {nombre}, soy Lucas Chebeir, instructor de esquí. Esquiamos juntos en {localidad}. Te escribo para contarte que en Bariloche llegó la nieve y ya abrió la parte superior. Está nevando hace 3 días y se pronostica nieve toda la próxima semana. ¡Si estabas pensando en venir, esta es la señal!';
+      resultsDiv.style.display = 'none';
+      loadingDiv.style.display = 'none';
+      vcfLoaded.style.display = 'none';
+      vcfInput.value = '';
+      processBtn.disabled = true;
+    }
+  </script>
+</body>
+</html>
