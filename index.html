@@ -11,7 +11,11 @@
       padding: 0;
       box-sizing: border-box;
     }
-    
+
+    button, input, textarea, select {
+      font-family: inherit;
+    }
+
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -466,17 +470,84 @@
     }
     
     #sendBtn {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: #25D366;
       color: white;
       width: 100%;
       margin-top: 20px;
     }
-    
-    #sendBtn:hover {
+
+    #sendBtn:hover:not(:disabled) {
       transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+      box-shadow: 0 8px 20px rgba(37, 211, 102, 0.35);
     }
-    
+
+    #sendBtn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .queue-status {
+      display: block;
+      text-align: center;
+      font-size: 12px;
+      color: #666;
+      margin-top: 8px;
+    }
+
+    .card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 8px;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .card-footer-buttons {
+      display: flex;
+      gap: 8px;
+    }
+
+    .whatsapp-btn {
+      background: #25D366;
+      color: white;
+      padding: 6px 14px;
+      font-size: 11px;
+    }
+
+    .whatsapp-btn:hover {
+      background: #1ebe59;
+    }
+
+    .copy-btn {
+      background: #f0f0f0;
+      color: #333;
+      padding: 6px 14px;
+      font-size: 11px;
+    }
+
+    .copy-btn:hover {
+      background: #e0e0e0;
+    }
+
+    .sent-badge {
+      display: none;
+      font-size: 11px;
+      font-weight: 600;
+      color: #1ebe59;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .sent-badge.active {
+      display: inline-flex;
+    }
+
+    .client-card.sent {
+      border-color: #c3e6cb;
+      background: #f6fdf8;
+    }
+
     .vcf-loaded {
       background: #d4edda;
       border: 1px solid #c3e6cb;
@@ -523,17 +594,61 @@
         </div>
         <div class="form-group">
           <label>🇪🇸 Mensaje en español</label>
-          <textarea id="messageInputEs">Hola {nombre}, soy Lucas Chebeir, instructor de esquí. Esquiamos juntos en {localidad}. Te escribo para contarte que en Bariloche llegó la nieve y ya abrió la parte superior. Está nevando hace 3 días y se pronostica nieve toda la próxima semana. ¡Si estabas pensando en venir, esta es la señal!</textarea>
+          <textarea id="messageInputEs">¡Hola {nombre}! 🎉 Soy Lucas Chebeir, instructor de esquí. 🏂
+
+Esquiamos juntos en {localidad} y quiero contarte que en BARILOCHE llegó la nieve. ❄️⛷️
+
+¡Ya abrió la parte superior! Está nevando hace 3 días y se pronostica NIEVE toda la próxima semana.
+
+Si estabas pensando en venir a Bariloche, ¡ESTE ES EL MOMENTO! 🏔️✨
+
+Si querés más info, ¡escribime! 📩
+
+O si simplemente querés estar actualizado con las condiciones de Bariloche y/o Zermatt, ¡seguime!
+
+📸 Instagram: @lucaschebeir @apexski.bariloche
+
+🎵 TikTok: @lucas.chebeir @apexski.bariloche</textarea>
           <p class="helper-text">Usa {nombre} y {localidad} como variables</p>
         </div>
         <div class="form-group">
           <label>🇧🇷 Mensaje en portugués</label>
-          <textarea id="messageInputPt">Olá {nombre}, sou o Lucas Chebeir, instrutor de esqui. Esquiamos juntos em {localidad}. Estou escrevendo para contar que a neve chegou em Bariloche e a parte de cima já abriu. Está nevando há 3 dias e a previsão é de neve durante toda a próxima semana. Se você estava pensando em vir, este é o sinal!</textarea>
+          <textarea id="messageInputPt">Olá {nombre}! 🎉 Sou o Lucas Chebeir, instrutor de esqui. 🏂
+
+Esquiamos juntos em {localidad} e quero te contar que em BARILOCHE chegou a neve. ❄️⛷️
+
+Já abriu a parte de cima! Tá nevando há 3 dias e a previsão é NEVE durante toda a próxima semana.
+
+Se você tava pensando em vir para Bariloche, AGORA É A HORA! 🏔️✨
+
+Se quiser mais informações, me escreve! 📩
+
+Ou se você só quer ficar atualizado com as condições de Bariloche e/ou Zermatt, me segue!
+
+📸 Instagram: @lucaschebeir @apexski.bariloche
+
+🎵 TikTok: @lucas.chebeir @apexski.bariloche
+
+Bora? 🎿</textarea>
           <p class="helper-text">Usa {nombre} y {localidad} como variables</p>
         </div>
         <div class="form-group">
           <label>🇬🇧 Mensaje en inglés</label>
-          <textarea id="messageInputEn">Hi {nombre}, this is Lucas Chebeir, ski instructor. We skied together in {localidad}. I'm writing to let you know that the snow has arrived in Bariloche and the upper part of the mountain is already open. It's been snowing for 3 days and more snow is forecast for the whole next week. If you were thinking about coming, this is the sign!</textarea>
+          <textarea id="messageInputEn">Hey {nombre}! 🎉 Lucas Chebeir here, ski instructor! 🏂
+
+We skied together in {localidad} and I want to let you know that snow has arrived in BARILOCHE. ❄️⛷️
+
+The upper section just opened! It's been snowing for 3 days and more snow is forecast all next week.
+
+If you were thinking about coming to Bariloche, NOW IS THE TIME! 🏔️✨
+
+If you want more info, just message me! 📩
+
+Or if you just want to stay updated on conditions in Bariloche and/or Zermatt, follow me!
+📸 Instagram: @lucaschebeir @apexski.bariloche
+🎵 TikTok: @lucas.chebeir @apexski.bariloche
+
+Let's go! 🎿</textarea>
           <p class="helper-text">Usa {nombre} y {localidad} como variables</p>
         </div>
       </div>
@@ -593,7 +708,8 @@
 
         <div class="clients-container" id="clientsList"></div>
 
-        <button id="sendBtn">Enviar por Brevo (cuando esté listo)</button>
+        <button id="sendBtn">📲 Enviar siguiente por WhatsApp</button>
+        <span id="queueStatus" class="queue-status"></span>
       </div>
     </div>
   </div>
@@ -621,6 +737,7 @@
     const selectAllBtn = document.getElementById('selectAllBtn');
     const deselectAllBtn = document.getElementById('deselectAllBtn');
     const selectedCountEl = document.getElementById('selectedCount');
+    const queueStatus = document.getElementById('queueStatus');
 
     let importedContacts = [];
     let translations = {};
@@ -629,6 +746,44 @@
     function updateSelectedCount() {
       const selected = importedContacts.filter(c => c.selected).length;
       selectedCountEl.textContent = `${selected} de ${importedContacts.length} seleccionados`;
+      updateQueueStatus();
+    }
+
+    function updateQueueStatus() {
+      const pending = importedContacts.filter(c => c.selected && !c.sent).length;
+      const selected = importedContacts.filter(c => c.selected).length;
+      queueStatus.textContent = pending > 0
+        ? `${pending} pendientes de ${selected} seleccionados`
+        : (selected > 0 ? '✓ Ya enviaste a todos los seleccionados' : 'No hay contactos seleccionados');
+      sendBtn.disabled = pending === 0;
+    }
+
+    function buildWhatsAppLink(phone, message) {
+      const digits = phone.replace(/[^\d]/g, '');
+      return `https://wa.me/${digits}?text=${encodeURIComponent(message)}`;
+    }
+
+    function markSent(idx) {
+      importedContacts[idx].sent = true;
+      const card = document.querySelector(`.client-card[data-index="${idx}"]`);
+      const btn = document.querySelector(`.whatsapp-btn[data-index="${idx}"]`);
+      const badge = document.querySelector(`.sent-badge[data-index="${idx}"]`);
+      if (card) card.classList.add('sent');
+      if (btn) btn.textContent = '🔁 Reenviar por WhatsApp';
+      if (badge) badge.classList.add('active');
+      updateQueueStatus();
+      syncContactsData();
+    }
+
+    function getMessageForContact(idx) {
+      if (editedMessages[idx] !== undefined) return editedMessages[idx];
+      const contact = importedContacts[idx];
+      return personalizeMessage(translations[contact.language], contact.name, contact.locality);
+    }
+
+    function sendToContact(idx) {
+      window.open(buildWhatsAppLink(importedContacts[idx].phone, getMessageForContact(idx)), '_blank');
+      markSent(idx);
     }
 
     searchInput.addEventListener('input', (e) => {
@@ -666,6 +821,25 @@
       if (card) card.classList.toggle('deselected', !e.target.checked);
       updateSelectedCount();
       syncContactsData();
+    });
+
+    clientsList.addEventListener('click', (e) => {
+      const waBtn = e.target.closest('.whatsapp-btn');
+      if (waBtn) {
+        sendToContact(parseInt(waBtn.dataset.index));
+        return;
+      }
+      const copyBtn = e.target.closest('.copy-btn');
+      if (copyBtn) {
+        const idx = parseInt(copyBtn.dataset.index);
+        navigator.clipboard.writeText(getMessageForContact(idx)).then(() => {
+          const original = copyBtn.innerHTML;
+          copyBtn.innerHTML = '<i class="fas fa-check"></i> Copiado';
+          setTimeout(() => { copyBtn.innerHTML = original; }, 1500);
+        }).catch(() => {
+          alert('No se pudo copiar automáticamente (esto requiere https, no funciona abriendo el archivo local). Una vez publicado en Vercel debería andar.');
+        });
+      }
     });
 
     function autoResize(textarea) {
@@ -831,7 +1005,8 @@
           phone: contact.phone,
           language: detectLanguage(contact.name, contact.phone),
           locality: contact.name.includes('Zermatt') ? 'Zermatt' : 'Bariloche',
-          selected: true
+          selected: true,
+          sent: false
         }));
 
         vcfLoadedText.textContent = `✓ Importados ${allContacts.length} contactos (${importedContacts.length} clientes/alumnos detectados)`;
@@ -891,7 +1066,7 @@
         const langIcon = { 'es': '🇪🇸', 'pt': '🇧🇷', 'en': '🇬🇧' }[contact.language];
         
         const card = document.createElement('div');
-        card.className = 'client-card' + (contact.selected ? '' : ' deselected');
+        card.className = 'client-card' + (contact.selected ? '' : ' deselected') + (contact.sent ? ' sent' : '');
         card.dataset.index = idx;
 
         card.innerHTML = `
@@ -911,6 +1086,13 @@
             <button class="lang-btn" data-lang="en">🇬🇧 EN</button>
           </div>
           <textarea class="message-preview" data-index="${idx}" rows="1">${personalizedMsg}</textarea>
+          <div class="card-footer">
+            <div class="card-footer-buttons">
+              <button class="copy-btn" data-index="${idx}"><i class="fas fa-copy"></i> Copiar mensaje</button>
+              <button class="whatsapp-btn" data-index="${idx}">${contact.sent ? '🔁 Reenviar por WhatsApp' : '📲 Enviar por WhatsApp'}</button>
+            </div>
+            <span class="sent-badge${contact.sent ? ' active' : ''}" data-index="${idx}"><i class="fas fa-check-circle"></i> Enviado</span>
+          </div>
         `;
 
         clientsList.appendChild(card);
@@ -993,8 +1175,14 @@
     });
 
     sendBtn.addEventListener('click', () => {
-      const selectedCount = importedContacts.filter(c => c.selected).length;
-      alert(`¡Cuando hayas verificado tu teléfono en Brevo, conectaremos esta app directamente!\n\nSe enviarían a ${selectedCount} de ${importedContacts.length} contactos (los seleccionados).\n\nMientras tanto, puedes copiar y pegar los mensajes manualmente a WhatsApp.`);
+      const idx = importedContacts.findIndex(c => c.selected && !c.sent);
+      if (idx === -1) {
+        alert('No quedan contactos seleccionados pendientes de enviar.');
+        return;
+      }
+      const card = document.querySelector(`.client-card[data-index="${idx}"]`);
+      if (card) card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      sendToContact(idx);
     });
 
     function limpiar() {
